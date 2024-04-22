@@ -4,13 +4,13 @@ from django.db.models.signals import post_save
 # Create your models here.
 
 
-class User (AbstractUser):
+class User(AbstractUser):
     username = models.CharField(max_length=100)
-    email = models. EmailField(unique=True)
+    email = models.EmailField(unique=True)
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
     def __str__(self):
         return self.username
@@ -25,8 +25,12 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     bio = models.TextField(blank=True, null=True, max_length=2500)
-    imagen = models.TextField(blank=True, null=True)
-    nombre_rol = models.TextField(blank=True, null=True, max_length=250,)
+    imagen = models.TextField(blank=True, null=True, max_length=2500)
+    nombre_rol = models.TextField(
+        blank=True,
+        null=True,
+        max_length=250,
+    )
     nombre_completo = models.CharField(max_length=250, null=True, blank=True)
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
@@ -38,12 +42,12 @@ class Profile(models.Model):
         db_table = "profile"
 
 
-def create_user_profile(sender, instance, created, ** kwargs):
+def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
 
-def save_user_profile(sender, instance, ** kwargs):
+def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
@@ -202,8 +206,7 @@ class TipoDocumento(models.Model):
 
 
 class TipoRedSocial(models.Model):
-    nombre = models.CharField(
-        unique=True, max_length=50, blank=True, null=True)
+    nombre = models.CharField(unique=True, max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -253,8 +256,7 @@ class Productos(models.Model):
     sub_categoria = models.ForeignKey(SubCategoria, models.DO_NOTHING)
     imagen = models.CharField(max_length=250, blank=True, null=True)
     cod_prod = models.CharField(max_length=5)
-    cod_prod_proveedor = models.CharField(
-        max_length=300, blank=True, null=True)
+    cod_prod_proveedor = models.CharField(max_length=300, blank=True, null=True)
     codigo_barra = models.CharField(max_length=95, blank=True, null=True)
     nombre = models.TextField()
     nombre_odoo = models.TextField()
@@ -268,8 +270,7 @@ class Productos(models.Model):
     iva = models.FloatField(blank=True, null=True)
     precio = models.FloatField(blank=True, null=True)
     proveedor = models.ForeignKey(Proveedor, models.DO_NOTHING)
-    fabricante = models.ForeignKey(
-        Fabricante, models.DO_NOTHING, blank=True, null=True)
+    fabricante = models.ForeignKey(Fabricante, models.DO_NOTHING, blank=True, null=True)
     presentacion_venta_id = models.IntegerField(blank=True, null=True)
     outlet = models.IntegerField()
     status = models.IntegerField(blank=True, null=True)
@@ -532,8 +533,7 @@ class Cuenta(models.Model):
 
 class Cupon(models.Model):
     codigo = models.CharField(max_length=25)
-    cliente = models.ForeignKey(
-        Cliente, models.DO_NOTHING, blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, models.DO_NOTHING, blank=True, null=True)
     monto = models.FloatField(blank=True, null=True)
     porcentaje = models.FloatField(blank=True, null=True)
     fecha_inicio = models.DateTimeField(blank=True, null=True)
@@ -563,8 +563,7 @@ class Pedido(models.Model):
     cliente = models.ForeignKey(Cliente, models.DO_NOTHING)
     pedido_status = models.ForeignKey(PedidoStatus, models.DO_NOTHING)
     tasa_dia = models.ForeignKey(TasaDia, models.DO_NOTHING)
-    cotizacion = models.ForeignKey(
-        Cotizacion, models.DO_NOTHING, blank=True, null=True)
+    cotizacion = models.ForeignKey(Cotizacion, models.DO_NOTHING, blank=True, null=True)
     codigo = models.CharField(max_length=20, blank=True, null=True)
     descuento = models.FloatField(blank=True, null=True)
     costo_total = models.FloatField(blank=True, null=True)
@@ -623,8 +622,7 @@ class DevolucionDetalle(models.Model):
     productos = models.ForeignKey(
         Productos, models.DO_NOTHING, db_column="productos_id", blank=True, null=True
     )
-    devolucion = models.ForeignKey(
-        Devolucion, models.DO_NOTHING, blank=True, null=True)
+    devolucion = models.ForeignKey(Devolucion, models.DO_NOTHING, blank=True, null=True)
     productos_sku = models.ForeignKey(
         Productos,
         models.DO_NOTHING,
@@ -707,8 +705,7 @@ class FacturaDetalle(models.Model):
     productos = models.ForeignKey(
         Productos, models.DO_NOTHING, db_column="productos_id", blank=True, null=True
     )
-    servicios = models.ForeignKey(
-        Servicios, models.DO_NOTHING, blank=True, null=True)
+    servicios = models.ForeignKey(Servicios, models.DO_NOTHING, blank=True, null=True)
     productos_sku = models.ForeignKey(
         Productos,
         models.DO_NOTHING,
@@ -754,10 +751,8 @@ class FormaPago(models.Model):
 class FacturaFormaPago(models.Model):
     forma_pago = models.ForeignKey(FormaPago, models.DO_NOTHING)
     factura = models.ForeignKey(Factura, models.DO_NOTHING)
-    cuenta = models.ForeignKey(
-        Cuenta, models.DO_NOTHING, blank=True, null=True)
-    banco_origen = models.ForeignKey(
-        Banco, models.DO_NOTHING, blank=True, null=True)
+    cuenta = models.ForeignKey(Cuenta, models.DO_NOTHING, blank=True, null=True)
+    banco_origen = models.ForeignKey(Banco, models.DO_NOTHING, blank=True, null=True)
     referencia = models.CharField(max_length=25, blank=True, null=True)
     monto = models.FloatField(blank=True, null=True)
     numero_documento = models.FloatField(blank=True, null=True)
@@ -817,10 +812,8 @@ class FacturaPagoSaldoAfavor(models.Model):
 
 
 class MovimientoDia(models.Model):
-    devolucion = models.ForeignKey(
-        Devolucion, models.DO_NOTHING, blank=True, null=True)
-    factura = models.ForeignKey(
-        Factura, models.DO_NOTHING, blank=True, null=True)
+    devolucion = models.ForeignKey(Devolucion, models.DO_NOTHING, blank=True, null=True)
+    factura = models.ForeignKey(Factura, models.DO_NOTHING, blank=True, null=True)
     status = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
@@ -837,12 +830,9 @@ class Parametro(models.Model):
     telefono = models.CharField(max_length=15, blank=True, null=True)
     mensaje_factura = models.CharField(max_length=200, blank=True, null=True)
     mensaje_pedido = models.CharField(max_length=200, blank=True, null=True)
-    mensaje_cotizacion = models.CharField(
-        max_length=200, blank=True, null=True)
-    mensaje_devolucion = models.CharField(
-        max_length=200, blank=True, null=True)
-    mensaje_documentos = models.CharField(
-        max_length=200, blank=True, null=True)
+    mensaje_cotizacion = models.CharField(max_length=200, blank=True, null=True)
+    mensaje_devolucion = models.CharField(max_length=200, blank=True, null=True)
+    mensaje_documentos = models.CharField(max_length=200, blank=True, null=True)
     maximo_descuento = models.FloatField(blank=True, null=True)
     imagen = models.CharField(max_length=500, blank=True, null=True)
 
@@ -853,13 +843,11 @@ class Parametro(models.Model):
 
 class PedidoDetalle(models.Model):
     id = models.IntegerField(primary_key=True)
-    pedido = models.ForeignKey(
-        Pedido, models.DO_NOTHING, blank=True, null=True)
+    pedido = models.ForeignKey(Pedido, models.DO_NOTHING, blank=True, null=True)
     productos = models.ForeignKey(
         Productos, models.DO_NOTHING, db_column="productos_id", blank=True, null=True
     )
-    servicios = models.ForeignKey(
-        Servicios, models.DO_NOTHING, blank=True, null=True)
+    servicios = models.ForeignKey(Servicios, models.DO_NOTHING, blank=True, null=True)
     productos_sku = models.ForeignKey(
         Productos,
         models.DO_NOTHING,
