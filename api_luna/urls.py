@@ -21,6 +21,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view()),
     path("register/", views.RegisterView.as_view()),
     path("dashboard/", views.dashboard),
+    path("v1/userUpdate/", views.userUpdate),
     path("v1/login", views.LoginView.as_view(), name="login"),
     path("v1/", include(router.urls)),
 ]

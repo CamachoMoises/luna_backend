@@ -43,6 +43,21 @@ def dashboard(request):
     return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(["POST", "PUT"])
+@permission_classes([IsAuthenticated])
+def userUpdate(request):
+    if request.method == "PUT":
+        text = request.data.get("username")
+        response = f"Hey {request.user},  PUT METHOD and your text is:{text}"
+        print(request.data, request.method)
+        return Response({"response": response}, status=status.HTTP_200_OK)
+    elif request.method == "POST":
+        text = request.data.get("username")
+        response = f"Hey {request.user},  POST METHOD and your text is:{text}"
+        print(text, request.method)
+        return Response({"response": response}, status=status.HTTP_200_OK)
+
+
 class LoginView(views.APIView):
     def post(self, request):
         username = request.data.get("username")

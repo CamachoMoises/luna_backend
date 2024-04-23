@@ -39,7 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_permissions(self, obj):
         # Check if request object exists (authenticated user)
         user = obj
-        permissions = user.user_permissions.values_list("codename", flat=True)
+        permissions = user.user_permissions.values_list("id", flat=True)
         return list(permissions)
 
 
@@ -113,4 +113,4 @@ class GroupSerializer(serializers.ModelSerializer):
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
-        fields = ["id", "name"]
+        fields = ["id", "name", "codename"]
