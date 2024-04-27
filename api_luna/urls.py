@@ -23,5 +23,10 @@ urlpatterns = [
     path("dashboard/", views.dashboard),
     path("v1/userUpdate/", views.userUpdate),
     path("v1/login", views.LoginView.as_view(), name="login"),
+    path(
+        "v1/userNameValidate/<str:value>/<str:type>/",
+        views.userValidate,
+        name="userValidate",
+    ),
     path("v1/", include(router.urls)),
 ]

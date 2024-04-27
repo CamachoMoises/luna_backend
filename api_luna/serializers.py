@@ -13,6 +13,19 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["imagen", "bio"]
 
 
+class GroupSerializer(serializers.ModelSerializer):
+    # permissions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Group
+        fields = ["id", "name", "permissions"]
+
+    # def get_permissions(self, obj):
+    #     group = obj
+    #     permissions = group.group_permissions.values_list("id", flat=True)
+    #     return list(permissions)
+
+
 class UserSerializer(serializers.ModelSerializer):
     # user_permissions = serializers.SerializerMethodField()
     profileData = ProfileSerializer(source="profile", read_only=True)
@@ -34,10 +47,10 @@ class UserSerializer(serializers.ModelSerializer):
             "is_superuser",
             "profileData",
             "permissions",
+            "last_login",
         ]
 
     def get_permissions(self, obj):
-        # Check if request object exists (authenticated user)
         user = obj
         permissions = user.user_permissions.values_list("id", flat=True)
         return list(permissions)
@@ -104,13 +117,23 @@ class ProductoSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = ["id", "name"]
-
-
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = ["id", "name", "codename"]
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # Specify fields allowed for update (consider using permissions)
+        fields = [
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+        ]  # Update allowed fields
+        extra_kwargs = {"password": {"write_only": True}}  # Hide
