@@ -7,6 +7,7 @@ from .serializers import (
     ProductoSerializer,
     GroupSerializer,
     PermissionSerializer,
+    UpdateUserSerializer,
 )
 from rest_framework import generics, status, views, viewsets, permissions
 from rest_framework.decorators import api_view, permission_classes, action
@@ -30,6 +31,23 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerilizer
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def userValidate(request, value, type):
+    match type:
+        case "email":
+            user = User.objects.filter(email=value)
+        case "username":
+            user = User.objects.filter(username=value)
+        case _:
+            return Response({"exist": True}, status=status.HTTP_200_OK)
+    print(value, user)
+    if not user:
+        return Response({"exist": False}, status=status.HTTP_200_OK)
+    else:
+        return Response({"exist": True}, status=status.HTTP_200_OK)
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def dashboard(request):
@@ -46,15 +64,71 @@ def dashboard(request):
 @api_view(["POST", "PUT"])
 @permission_classes([IsAuthenticated])
 def userUpdate(request):
+    password = request.data.get("password")
+    selectGroups = request.data.get("selectGroups")
+    selectPermission = request.data.get("selectPermission")
     if request.method == "PUT":
-        text = request.data.get("username")
-        response = f"Hey {request.user},  PUT METHOD and your text is:{text}"
-        print(request.data, request.method)
+        user_id = request.data.get("user_id")
+        try:
+            userData = User.objects.filter(id=user_id).get()
+            serializer = UpdateUserSerializer(userData, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if password:
+                userData.set_password(password)
+                userData.save()
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            for group in Group.objects.filter(user=userData):
+                group.user_set.remove(userData)
+        except Group.DoesNotExist:
+            print("no existen grupos")
+        except Exception as e:
+            # Handle other potential exceptions (e.g., database errors)
+            print("error grupos", e)
+        try:
+            for permission in Permission.objects.filter(user=userData):
+                print(permission)
+                permission.user_set.remove(userData)
+
+        except Permission.DoesNotExist:
+            print("no existen permisos")
+        except Exception as e:
+            # Handle other potential exceptions (e.g., database errors)
+            print("error permisos", e)
+
+        for x in selectGroups:
+            groupl = Group.objects.filter(id=x).get()
+            groupl.user_set.add(userData)
+        for x in selectPermission:
+            permissionUser = Permission.objects.filter(id=x).get()
+            permissionUser.user_set.add(userData)
+        response = f"Hey {request.user},  PUT METHOD"
         return Response({"response": response}, status=status.HTTP_200_OK)
     elif request.method == "POST":
-        text = request.data.get("username")
-        response = f"Hey {request.user},  POST METHOD and your text is:{text}"
-        print(text, request.method)
+        serializer = UpdateUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            username = serializer.data["username"]
+            userData = User.objects.filter(username=username).get()
+            if password:
+                userData.set_password(password)
+                userData.save()
+        for x in selectGroups:
+            groupl = Group.objects.filter(id=x).get()
+            groupl.user_set.add(userData)
+
+        for x in selectPermission:
+            permissionUser = Permission.objects.filter(id=x).get()
+            permissionUser.user_set.add(userData)
+        response = f"Hey {request.user}, POST METHOD"
+
         return Response({"response": response}, status=status.HTTP_200_OK)
 
 
