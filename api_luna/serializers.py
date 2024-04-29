@@ -15,15 +15,14 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     # permissions = serializers.SerializerMethodField()
+    users = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
-        fields = ["id", "name", "permissions"]
+        fields = ["id", "name", "permissions", "users"]
 
-    # def get_permissions(self, obj):
-    #     group = obj
-    #     permissions = group.group_permissions.values_list("id", flat=True)
-    #     return list(permissions)
+    def get_users(self, obj):
+        return [user.id for user in obj.users.all()]  #
 
 
 class UserSerializer(serializers.ModelSerializer):

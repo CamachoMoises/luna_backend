@@ -19,6 +19,8 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.models import update_last_login
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import HttpResponse
 
 
 class UserTokenObtainView(TokenObtainPairView):
@@ -59,6 +61,33 @@ def dashboard(request):
         response = f"Hey {request.user},  POST METHOD and your text is:{text}"
         return Response({"response": response}, status=status.HTTP_200_OK)
     return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@csrf_exempt  # Remove if not using CSRF tokens
+def search_view(request):
+    username = request.GET.get("username")
+    email = request.GET.get("email")
+    id = request.GET.get("id")
+    users = User.objects.filter()
+
+    if username:
+        users = users.filter(username__icontains=username)
+
+    if email:
+        users = users.filter(email__icontains=email)
+    if id:
+        users = users.filter(id__icontains=id)
+
+    serialized_users = []
+    for user in users:
+        serializer = UserSerializer(user, context={"request": request})
+        serialized_users.append(serializer.data)
+
+    return JsonResponse(
+        {"users": serialized_users},
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(["POST", "PUT"])
