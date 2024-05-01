@@ -14,7 +14,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    # permissions = serializers.SerializerMethodField()
     users = serializers.SerializerMethodField()
 
     class Meta:
@@ -22,7 +21,9 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "permissions", "users"]
 
     def get_users(self, obj):
-        return [user.id for user in obj.users.all()]  #
+        return [
+            {"id": user.id, "username": user.username} for user in obj.user_set.all()
+        ]
 
 
 class UserSerializer(serializers.ModelSerializer):

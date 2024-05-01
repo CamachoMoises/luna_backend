@@ -22,7 +22,7 @@ urlpatterns = [
     path("register/", views.RegisterView.as_view()),
     path("dashboard/", views.dashboard),
     path("v1/userUpdate/", views.userUpdate),
-    path("v1/filterUSer/", views.search_view),
+    path("v1/filterUSer/", views.search_user),
     path("v1/login", views.LoginView.as_view(), name="login"),
     path(
         "v1/userNameValidate/<str:value>/<str:type>/",
