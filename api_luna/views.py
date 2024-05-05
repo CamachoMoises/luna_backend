@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Profile, User, Productos
+from .models import Profile, User, Productos, Group as GroupDetails
 from .serializers import (
     UserSerializer,
     UserTokenObtainPairSerializer,
@@ -20,7 +20,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.models import update_last_login
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import HttpResponse
 
 
 class UserTokenObtainView(TokenObtainPairView):
@@ -31,6 +30,17 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = RegisterSerilizer
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def groupValidate(request, value):
+    group = Group.objects.filter(name=value)
+    print(value, group)
+    if not group:
+        return Response({"exist": False}, status=status.HTTP_200_OK)
+    else:
+        return Response({"exist": True}, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -64,7 +74,7 @@ def dashboard(request):
 
 
 @api_view(["GET"])
-@csrf_exempt  # Remove if not using CSRF tokens
+@csrf_exempt
 def search_user(request):
     username = request.GET.get("username")
     email = request.GET.get("email")
@@ -82,6 +92,23 @@ def search_user(request):
         serialized_users.append(serializer.data)
     return JsonResponse(
         {"users": serialized_users},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@csrf_exempt
+def search_group(request):
+    name = request.GET.get("name")
+    groups = Group.objects.filter()
+    if name:
+        groups = groups.filter(name__icontains=name)
+    serialized_groups = []
+    for group in groups:
+        serializer = GroupSerializer(group, context={"request": request})
+        serialized_groups.append(serializer.data)
+    return JsonResponse(
+        {"groups": serialized_groups},
         status=status.HTTP_200_OK,
     )
 
@@ -108,7 +135,6 @@ def userUpdate(request):
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
-
         try:
             for group in Group.objects.filter(user=userData):
                 group.user_set.remove(userData)
@@ -153,8 +179,50 @@ def userUpdate(request):
             permissionUser = Permission.objects.filter(id=x).get()
             permissionUser.user_set.add(userData)
         response = f"Hey {request.user}, POST METHOD"
-
         return Response({"response": response}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST", "PUT"])
+@permission_classes([IsAuthenticated])
+def groupUpdate(request):
+    selectPermission = request.data.get("selectPermission")
+    if request.method == "PUT":
+        group_id = request.data.get("group_id")
+        statusGroup = request.data.get("status")
+        try:
+            print(request.data)
+            group = Group.objects.filter(id=group_id).get()
+            group.permissions.clear()
+            if statusGroup == 0:
+                group.user_set.clear()
+            group.save()
+            groupDetails = GroupDetails.objects.filter(id=group_id).get()
+            groupDetails.status = statusGroup
+            groupDetails.save()
+            group.permissions.add(*selectPermission)
+            serializer = GroupSerializer(group, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Group.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        response = f"Hey {request.user},  PUT METHOD"
+        return Response(
+            {"response": response, "updated": True}, status=status.HTTP_200_OK
+        )
+    elif request.method == "POST":
+        name = request.data.get("name")
+        group = Group.objects.create(name=name)
+        group_id = group.id
+        group.permissions.add(*selectPermission)
+        response = f"Hey {request.user}, POST METHOD"
+        return Response(
+            {"response": response, "id": group_id}, status=status.HTTP_200_OK
+        )
 
 
 class LoginView(views.APIView):

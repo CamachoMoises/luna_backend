@@ -1,9 +1,7 @@
 from rest_framework import serializers
-from .models import Productos, User, Profile
+from .models import Productos, User, Profile, Group as groupDetails
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework import serializers
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group, Permission
 
 
@@ -15,15 +13,28 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     users = serializers.SerializerMethodField()
+    details = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
-        fields = ["id", "name", "permissions", "users"]
+        fields = ["id", "name", "permissions", "status", "details", "users"]
 
     def get_users(self, obj):
         return [
             {"id": user.id, "username": user.username} for user in obj.user_set.all()
         ]
+
+    def get_status(self, obj):
+        group = groupDetails.objects.filter(name=obj).get()
+        return group.status
+
+    def get_details(self, obj):
+        group = groupDetails.objects.filter(name=obj).get()
+        return {
+            "created_at": group.created_at,
+            "updated_at": group.updated_at,
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):

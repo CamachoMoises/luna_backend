@@ -22,18 +22,20 @@ class User(AbstractUser):
 class Group(models.Model):
     name = models.CharField(max_length=255, unique=True)
     users = models.ManyToManyField(User, blank=True)
-
-    def __str__(self):
-        return self.name
+    status = models.IntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
+        db_table = "auth_group"
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True, null=True, max_length=2500)
     imagen = models.TextField(blank=True, null=True, max_length=2500)
+    profile_image = models.ImageField(blank=True, null=True, upload_to="user_profiles/")
     nombre_rol = models.TextField(
         blank=True,
         null=True,
@@ -47,6 +49,7 @@ class Profile(models.Model):
         return self.nombre_completo
 
     class Meta:
+        managed = False
         db_table = "profile"
 
 
