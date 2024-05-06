@@ -35,7 +35,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True, null=True, max_length=2500)
     imagen = models.TextField(blank=True, null=True, max_length=2500)
-    profile_image = models.ImageField(blank=True, null=True, upload_to="user_profiles/")
+    # profile_image = models.ImageField(blank=True, null=True, upload_to="user_profiles/")
     nombre_rol = models.TextField(
         blank=True,
         null=True,
